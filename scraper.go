@@ -18,7 +18,6 @@ import (
 	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/ethereum/go-ethereum/rpc"
 )
 
 func startScraper(ctx context.Context, client *ethclient.Client) {
@@ -190,8 +189,7 @@ func scrapeBlock(ctx context.Context, chainId uint64, client *ethclient.Client, 
 	mainBlockMiner := getMiner(ctx, chainId, client, blockHeader)
 	var blockReceipts []*types.Receipt
 	retryUntilSuccessOrContextDone(ctx, func(ctx context.Context) error {
-		blockReceipts, err = client.BlockReceipts(ctx, rpc.BlockNumberOrHashWithNumber(rpc.BlockNumber(blockNumber)))
-		return err
+		return client.Client().CallContext(ctx, &blockReceipts, "eth_getBlockReceipts", fmt.Sprintf("0x%x", blockNumber))
 	}, "BlockReceipts")
 	rewardsByMiner := make(map[common.Address]*big.Int)
 	rewardsByUncleBlock := make(map[common.Hash]*big.Int)
